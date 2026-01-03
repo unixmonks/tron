@@ -1,6 +1,45 @@
 # Tron
 
+> **⚠️ Experimental Project** - This project is under active development and changing rapidly. APIs, configuration, and features may change without notice.
+>
+> **🔓 Security Warning** - This project is highly insecure. It executes arbitrary plugins, has no authentication beyond Signal's, and should only be run in trusted environments. Do not expose to untrusted users.
+
 A Signal messaging bot with LLM integration and plugin support.
+
+## Quick Examples
+
+Once running, chat with the bot naturally. It uses plugins automatically based on your requests:
+
+```
+You: "What tasks do I have pending?"
+Bot: [invokes task plugin]
+    You have 3 pending tasks:
+    1. Call the plumber (due: tomorrow)
+    2. Review budget spreadsheet (due: Friday)
+    3. Book dentist appointment
+
+You: "Add a task to pick up groceries"
+Bot: [invokes task plugin]
+    Added: "Pick up groceries"
+
+You: "What's using all my CPU?"
+Bot: [invokes ps plugin]
+    Top processes by CPU:
+    - firefox (12.3%)
+    - code (8.1%)
+    - slack (4.2%)
+
+You: "Mark task 1 as done"
+Bot: [invokes task plugin]
+    Completed: "Call the plumber"
+```
+
+In group chats, prefix messages with the trigger keyword (default: `T`):
+
+```
+You: "T what tasks are due today?"
+Bot: [responds to the group]
+```
 
 ## Prerequisites
 
@@ -140,6 +179,8 @@ See [PLUGINS.md](PLUGINS.md) for:
 - Plugin configuration
 
 ## Reminders
+
+> **🚧 Work in Progress** - The reminder system is not fully functional yet. The core scheduling logic exists but may have bugs or missing features.
 
 The reminder system allows scheduling prompts that execute with full tool access. The scheduler checks for due reminders every minute.
 

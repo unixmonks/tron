@@ -1,0 +1,30 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+*.db
+
+bin/
+
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Config files
+config.yaml

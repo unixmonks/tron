@@ -1,0 +1,77 @@
+#!/bin/bash
+set -e
+
+input=$(cat)
+
+action=$(echo "$input" | jq -r '.action // empty')
+id=$(echo "$input" | jq -r '.id // empty')
+desc=$(echo "$input" | jq -r '.description // empty')
+project=$(echo "$input" | jq -r '.project // empty')
+priority=$(echo "$input" | jq -r '.priority // empty')
+due=$(echo "$input" | jq -r '.due // empty')
+filter=$(echo "$input" | jq -r '.filter // empty')
+
+readarray -t tags < <(echo "$input" | jq -r '.tags // [] | .[]')
+
+build_mods() {
+    local mods=""
+    [[ -n "$project" ]] && mods="$mods project:$project"
+    [[ -n "$priority" ]] && mods="$mods priority:$priority"
+    [[ -n "$due" ]] && mods="$mods due:$due"
+    for tag in "${tags[@]}"; do
+        [[ -n "$tag" ]] && mods="$mods +$tag"
+    done
+    echo "$mods"
+}
+
+case "$action" in
+    list)
+        if [[ -n "$filter" ]]; then
+            task $filter export 2>/dev/null | jq '[.[] | select(.status == "pending")]'
+        else
+            task status:pending export 2>/dev/null | jq '.'
+        fi
+        ;;
+    add)
+        if [[ -z "$desc" ]]; then
+            echo '{"error": "description required for add action"}' >&2
+            exit 1
+        fi
+        mods=$(build_mods)
+        task add "$desc" $mods >/dev/null 2>&1
+        task +LATEST export 2>/dev/null | jq '.[0]'
+        ;;
+    done)
+        if [[ -z "$id" ]]; then
+            echo '{"error": "id required for done action"}' >&2
+            exit 1
+        fi
+        task "$id" done >/dev/null 2>&1
+        echo "{\"status\": \"completed\", \"id\": $id}"
+        ;;
+    modify)
+        if [[ -z "$id" ]]; then
+            echo '{"error": "id required for modify action"}' >&2
+            exit 1
+        fi
+        mods=$(build_mods)
+        if [[ -n "$desc" ]]; then
+            task "$id" modify "$desc" $mods >/dev/null 2>&1
+        else
+            task "$id" modify $mods >/dev/null 2>&1
+        fi
+        task "$id" export 2>/dev/null | jq '.[0]'
+        ;;
+    delete)
+        if [[ -z "$id" ]]; then
+            echo '{"error": "id required for delete action"}' >&2
+            exit 1
+        fi
+        task rc.confirmation=off "$id" delete >/dev/null 2>&1
+        echo "{\"status\": \"deleted\", \"id\": $id}"
+        ;;
+    *)
+        echo "{\"error\": \"unknown action: $action\"}" >&2
+        exit 1
+        ;;
+esac

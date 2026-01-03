@@ -1,0 +1,28 @@
+# Tron Bot Configuration
+# Copy this file to config.yaml and customize as needed.
+# Environment variables override values in this file.
+
+# Signal Configuration
+signal_cli_url: "http://localhost:8080"
+signal_bot_account: "+1234567890"          # Required: Your bot's phone number
+signal_operator: "+0987654321"             # Required: Operator's phone number
+
+# LLM Configuration
+llm_api_url: "https://api.deepinfra.com/v1/openai"
+llm_api_key: "your-api-key-here"           # Required: API key for the LLM provider
+llm_model: "deepseek-ai/DeepSeek-V3.1"
+llm_system_prompt: |
+  You are a personal assistant bot on Signal. You manage tasks and answer questions.
+
+  Keep responses short - this is mobile chat, not a novel. Never use emojis.
+  Be direct and get to the point. You're helpful but you don't sugarcoat things.
+
+# Storage
+plugin_dir: "plugins.d"
+db_path: "tron.db"
+
+# Behavior
+trigger_keyword: "T"                       # Keyword to trigger bot in group chats
+memory_max_messages: 50                    # Max messages to keep in conversation history
+memory_max_minutes: 60                     # Max age of messages in history (minutes)
+daily_summary_hour: 7                      # Hour to send daily summary (24h format, PDT)

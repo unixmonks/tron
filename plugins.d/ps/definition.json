@@ -1,0 +1,32 @@
+{
+  "name": "ps",
+  "description": "List running system processes. Can filter by user, command pattern, and sort by various metrics.",
+  "enabled": true,
+  "timeout": 10,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "user": {
+        "type": "string",
+        "description": "Filter by username (e.g., 'root', 'www-data')"
+      },
+      "pattern": {
+        "type": "string",
+        "description": "Filter by command name pattern (grep-style regex)"
+      },
+      "sort": {
+        "type": "string",
+        "enum": ["cpu", "mem", "pid", "time"],
+        "description": "Sort by: cpu (CPU usage), mem (memory usage), pid (process ID), time (running time)"
+      },
+      "limit": {
+        "type": "integer",
+        "description": "Maximum number of processes to return (default: 20)"
+      },
+      "all": {
+        "type": "boolean",
+        "description": "Show all processes including kernel threads (default: false)"
+      }
+    }
+  }
+}

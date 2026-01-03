@@ -1,0 +1,68 @@
+#!/bin/bash
+set -e
+
+input=$(cat)
+
+user=$(echo "$input" | jq -r '.user // empty')
+pattern=$(echo "$input" | jq -r '.pattern // empty')
+sort_by=$(echo "$input" | jq -r '.sort // empty')
+limit=$(echo "$input" | jq -r '.limit // 20')
+show_all=$(echo "$input" | jq -r '.all // false')
+
+ps_opts="aux"
+if [[ "$show_all" == "true" ]]; then
+    ps_opts="auxww"
+fi
+
+ps_output=$(ps $ps_opts 2>/dev/null | tail -n +2)
+
+if [[ -n "$user" ]]; then
+    ps_output=$(echo "$ps_output" | awk -v u="$user" '$1 == u')
+fi
+
+if [[ -n "$pattern" ]]; then
+    ps_output=$(echo "$ps_output" | grep -E "$pattern" 2>/dev/null || true)
+fi
+
+case "$sort_by" in
+    cpu)
+        ps_output=$(echo "$ps_output" | sort -k3 -rn)
+        ;;
+    mem)
+        ps_output=$(echo "$ps_output" | sort -k4 -rn)
+        ;;
+    pid)
+        ps_output=$(echo "$ps_output" | sort -k2 -n)
+        ;;
+    time)
+        ps_output=$(echo "$ps_output" | sort -k10 -r)
+        ;;
+esac
+
+ps_output=$(echo "$ps_output" | head -n "$limit")
+
+echo "$ps_output" | awk '
+BEGIN { print "[" }
+{
+    user = $1
+    pid = $2
+    cpu = $3
+    mem = $4
+    vsz = $5
+    rss = $6
+    tty = $7
+    stat = $8
+    start = $9
+    time = $10
+    cmd = ""
+    for (i = 11; i <= NF; i++) {
+        cmd = cmd (i > 11 ? " " : "") $i
+    }
+    gsub(/"/, "\\\"", cmd)
+    gsub(/\\/, "\\\\", cmd)
+
+    if (NR > 1) print ","
+    printf "  {\"user\": \"%s\", \"pid\": %s, \"cpu\": %s, \"mem\": %s, \"vsz\": %s, \"rss\": %s, \"tty\": \"%s\", \"stat\": \"%s\", \"start\": \"%s\", \"time\": \"%s\", \"command\": \"%s\"}", user, pid, cpu, mem, vsz, rss, tty, stat, start, time, cmd
+}
+END { print "\n]" }
+'

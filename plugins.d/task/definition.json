@@ -1,0 +1,47 @@
+{
+  "name": "task",
+  "description": "Manage tasks using Taskwarrior. Can list, add, complete, and modify tasks.",
+  "enabled": true,
+  "timeout": 30,
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "action": {
+        "type": "string",
+        "enum": ["list", "add", "done", "modify", "delete"],
+        "description": "The action to perform"
+      },
+      "description": {
+        "type": "string",
+        "description": "Task description (for add/modify)"
+      },
+      "id": {
+        "type": "integer",
+        "description": "Task ID (for done/delete/modify)"
+      },
+      "project": {
+        "type": "string",
+        "description": "Project name"
+      },
+      "priority": {
+        "type": "string",
+        "enum": ["H", "M", "L"],
+        "description": "Priority: High, Medium, Low"
+      },
+      "due": {
+        "type": "string",
+        "description": "Due date (e.g., 'tomorrow', '2024-12-01', 'eow')"
+      },
+      "tags": {
+        "type": "array",
+        "items": {"type": "string"},
+        "description": "Tags to add to the task"
+      },
+      "filter": {
+        "type": "string",
+        "description": "Filter for list action (e.g., 'project:work', '+urgent')"
+      }
+    },
+    "required": ["action"]
+  }
+}
