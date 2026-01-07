@@ -15,7 +15,6 @@ import (
 	"tron/llm"
 	"tron/memory"
 	"tron/plugins"
-	"tron/reminder"
 	"tron/scheduler"
 	signalcli "tron/signal"
 )
@@ -26,7 +25,6 @@ type app struct {
 	handler         *bot.Handler
 	memoryStore     *memory.Store
 	sched           *scheduler.Scheduler
-	reminderSched   *reminder.Scheduler
 	operatorAddress string
 }
 
@@ -53,7 +51,6 @@ func main() {
 	defer cancel()
 
 	go a.sched.Start(ctx)
-	go a.reminderSched.Start(ctx)
 
 	a.run(ctx, cancel)
 }
@@ -95,19 +92,6 @@ func newApp(cfg *config.Config) (*app, func(), error) {
 		memoryStore:  memoryStore,
 	}
 
-	reminderStore, err := reminder.NewStore(memoryStore.DB())
-	if err != nil {
-		memoryStore.Close()
-		return nil, nil, err
-	}
-
-	reminderExecutor := reminder.NewExecutor(handler)
-	a.reminderSched = reminder.NewScheduler(reminderStore, reminderExecutor.Execute, a.sendToRecipient, cfg.Debug)
-
-	reminderTool := reminder.NewTool(reminderStore, a.reminderSched)
-	pluginManager.RegisterTool("reminder", reminderTool)
-	log.Printf("  Reminder system: enabled")
-
 	sched, err := scheduler.NewScheduler(cfg.DailySummaryHour, handler.GenerateDailySummary, a.sendToOperator)
 	if err != nil {
 		memoryStore.Close()
@@ -125,19 +109,6 @@ func (a *app) sendToOperator(message string) error {
 		addr = formatRecipient(a.cfg.SignalOperator)
 	}
 	return a.signalClient.SendMessage(addr, message)
-}
-
-func (a *app) sendToRecipient(recipient, message string) error {
-	if recipient == "" {
-		return a.sendToOperator(message)
-	}
-	if strings.HasPrefix(recipient, "group:") {
-		return a.signalClient.SendGroupMessage(strings.TrimPrefix(recipient, "group:"), message)
-	}
-	if strings.HasPrefix(recipient, "dm:") {
-		return a.signalClient.SendMessage(strings.TrimPrefix(recipient, "dm:"), message)
-	}
-	return a.sendToOperator(message)
 }
 
 func (a *app) run(ctx context.Context, cancel context.CancelFunc) {

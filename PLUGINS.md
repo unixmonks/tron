@@ -228,12 +228,6 @@ make run-debug
 
 Internal tools are Go-based plugins compiled into the Tron binary. They have direct access to the database and other internal systems.
 
-### Built-in Internal Tools
-
-| Tool | Description |
-|------|-------------|
-| `reminder` | Schedule and manage reminders (see [Reminders](#reminders) in README) |
-
 ### Creating an Internal Tool
 
 Internal tools implement the `InternalTool` interface:

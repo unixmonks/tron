@@ -46,7 +46,7 @@ Bot: [responds to the group]
 - Go 1.25.3+
 - [signal-cli](https://github.com/AsamK/signal-cli) running in JSON-RPC daemon mode
 - An LLM API endpoint (OpenAI-compatible, e.g., DeepInfra, OpenAI, local Ollama)
-- SQLite3 (for conversation memory and reminders)
+- SQLite3 (for conversation memory)
 - Taskwarrior (optional, for task plugin)
 
 ### Setting up signal-cli
@@ -177,58 +177,6 @@ See [PLUGINS.md](PLUGINS.md) for:
 - Using included plugins (`task`, `ps`)
 - Creating custom plugins
 - Plugin configuration
-
-## Reminders
-
-> **🚧 Work in Progress** - The reminder system is not fully functional yet. The core scheduling logic exists but may have bugs or missing features.
-
-The reminder system allows scheduling prompts that execute with full tool access. The scheduler checks for due reminders every minute.
-
-### Schedule Formats
-
-| Format | Example | Description |
-|--------|---------|-------------|
-| `daily:HH:MM` | `daily:08:00` | Run daily at specified time |
-| `hourly:MM` | `hourly:30` | Run every hour at specified minute |
-| `interval:DURATION` | `interval:2h` | Run every N duration (30m, 2h, etc.) |
-| `cron:EXPR` | `cron:0 8 * * 1-5` | Standard 5-field cron expression |
-| `once:DATETIME` | `once:2024-01-15T08:00` | Run once at specified time |
-
-### Actions
-
-| Action | Description |
-|--------|-------------|
-| `list` | Show all configured reminders |
-| `add` | Create a new reminder (requires: name, prompt, schedule) |
-| `delete` | Remove a reminder by ID |
-| `enable` | Enable a paused reminder |
-| `disable` | Pause a reminder without deleting |
-| `run` | Execute a reminder immediately |
-
-### Examples
-
-**Creating reminders (via chat):**
-
-```
-"Set a reminder to check my tasks every morning at 8am"
-→ Creates: daily:08:00 reminder with prompt to list pending tasks
-
-"Remind me every 2 hours to take a break"
-→ Creates: interval:2h reminder
-
-"Every weekday at 9am, summarize my calendar"
-→ Creates: cron:0 9 * * 1-5 reminder
-```
-
-**How it works:**
-
-1. The scheduler runs in the background, checking every minute for due reminders
-2. When a reminder is due, its prompt is sent to the LLM with full tool access
-3. The LLM executes the prompt (can use plugins, check tasks, etc.)
-4. The response is sent to the original chat
-5. The next run time is calculated based on the schedule type
-
-Reminders are stored in SQLite and persist across restarts.
 
 ## Makefile Targets
 
